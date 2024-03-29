@@ -1,0 +1,38 @@
+##################################################
+# Name: Snakefile
+# Description: Main workflow for Cliffy Experiments
+# Date: March 18th, 2024
+##################################################
+
+configfile: "config/config.yaml"
+
+# load variables from config file
+repo_dir = config["REPO_DIR"]
+work_dir = config["WORK_DIR"]
+time_prog = config["TIME_PROG"]
+time_format = config["TIME_FORMAT"]
+dap_read_prog = config["DAP_READ_PROG"]
+microbe_mixer_prog = config["MICROBE_MIXER_PROG"]
+
+# load variables for specific experiments
+num_genera_exp1 = config["NUM_GENERA_EXP1"]
+tmp_mem_used_exp1 = config["TEMP_MEM_USED_EXP1"]
+
+doc_to_trav_exp3 = config["DOC_TO_TRAV_EXP3"]
+silva_tax_rank_exp3 = config["SILVA_TAX_RANK_EXP3"]
+trav_to_seq_exp3 = config["TRAV_TO_SEQ_EXP3"]
+
+###############################################################################
+# IMPORTANT: Sets the working directory based on configuration parameter, and 
+#            it can be set on command-line using --config DATA_ROOT=""
+###############################################################################
+workdir: config["WORK_DIR"]
+
+###############################################################################
+# Imports rules for each type of experiment
+###############################################################################
+
+include: "rules/exp_1.smk"
+include: "rules/exp_2.smk"
+include: "rules/exp_3.smk"
+
