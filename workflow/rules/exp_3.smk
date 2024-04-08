@@ -526,7 +526,7 @@ rule generate_read_classification_comparison_results_exp3:
         "exp3_final_results/accuracy_debugging.csv"
     run:
         with open(output[0], "w") as out_fd:
-            out_fd.write("dataset,region,type,x,no_hits,hits_to_correct_genus,lengths_contain_doc,lengths_exclusive_doc,percent_to_clade,avg_clade_size\n")
+            out_fd.write("database,dataset,region,type,x,no_hits,hits_to_correct_genus,lengths_contain_doc,lengths_exclusive_doc,percent_to_clade,avg_clade_size\n")
             for database in ["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
                              "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"]:
                 for dataset in ["aquatic", "soil"]:
