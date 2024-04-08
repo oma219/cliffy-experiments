@@ -166,7 +166,7 @@ plot_abund_func <- function(curr_dataset) {
                     "V4_V5" = "V4-V5 Reads (n=200k)")
         
         # define color mapping
-        color_mapping <- colorRampPalette(brewer.pal(8, "Set1"))(length(unique(df_subset$genus)))
+        color_mapping <- colorRampPalette(brewer.pal(8, "Paired"))(length(unique(df_subset$genus)))
         names(color_mapping) <- sort(unique(df_subset$genus))
         color_mapping["Others"] <- "gray"
         
@@ -228,9 +228,6 @@ plot <- ggplot(bc_df, aes(x=region, y=bcdist, group=method)) +
 plot
 ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3/bc_distances.pdf", 
        plot, 
-       width=10, 
-       height=4,
-       dpi=500)
        width=10, 
        height=4,
        dpi=500)

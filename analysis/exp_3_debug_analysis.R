@@ -3,8 +3,7 @@
 library(ggplot2)
 library(dplyr)
 
-df <- read.csv("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3_analysis/accuracy_debugging.csv", 
-              header=TRUE)
+df <- read.csv("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3_analysis/accuracy_debugging.csv", header=TRUE)
 
 ########################################################
 # Plot #1: Density of minimizers with no hits
@@ -127,25 +126,32 @@ ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3_analysis/plot_4.p
 #########################################################################
 # Plot #5: Density of minimizer hits to each level of taxonomy
 #########################################################################
-labels <- c("Genus", "Family", "Order", "Class", "Phylum", "Domain")
+labels <- c("Genus", "Family", "Order", "Class", "Phylum", "Domain", "Root", "No Hit")
 
-plot5 <-ggplot(df, aes(x=x, ymin=0, ymax=percent_to_clade, fill=type)) +
-  geom_ribbon(alpha = 0.4) +
-  geom_line(aes(y=percent_to_clade, color=type)) +
-  labs(x = "Major Clade", y = "Density", fill = "Method") +
-  theme_bw() +
-  facet_wrap(~interaction(dataset,region), labeller=as_labeller(titles)) +
-  theme(axis.text.y=element_text(size=10, color="black"),
-        axis.text.x=element_text(size=10, color="black", angle=40, hjust=1),
-        strip.text=element_text(size=12, face="bold"),
-        axis.title.x=element_text(size=12),
-        axis.title.y=element_text(size=12),
-        legend.text=element_text(size=10),
-        legend.title=element_text(size=12)) +
-  scale_fill_discrete(name="Method") +
-  scale_x_continuous(breaks = 0:5, labels = labels, limits=c(0,5)) +
-  scale_color_discrete(name="Method")
+titles <- c("aquatic.V1_V2" = "Aquatic V1-V2 Reads (n=200k)", 
+            "aquatic.V4_V4" = "Aquatic V4 Reads (n=200k)", 
+            "soil.V1_V2" = "Soil V1-V2 Reads (n=200k)",
+            "soil.V4_V4" = "Soil V4 Reads (n=200k)")
 
+df_filt <- df %>% filter(database == "silva_m31")
+
+plot5 <-ggplot(df_filt, aes(x=x, ymin=0, ymax=percent_to_clade, fill=type)) +
+        geom_ribbon(alpha = 0.4) +
+        geom_line(aes(y=percent_to_clade, color=type)) +
+        labs(x = "Major Clade", y = "Density", fill = "Method") +
+        theme_bw() +
+        facet_wrap(~interaction(dataset,region), labeller=as_labeller(titles)) +
+        theme(axis.text.y=element_text(size=10, color="black"),
+              axis.text.x=element_text(size=10, color="black", angle=40, hjust=1),
+              strip.text=element_text(size=12, face="bold"),
+              axis.title.x=element_text(size=12),
+              axis.title.y=element_text(size=12),
+              legend.text=element_text(size=10),
+              legend.title=element_text(size=12)) +
+        scale_fill_discrete(name="Method") +
+        scale_x_continuous(breaks = 0:7, labels = labels, limits=c(0,7)) +
+        scale_color_discrete(name="Method")
+plot5
 ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3_analysis/plot_5.pdf", 
        plot5, 
        width=8, 

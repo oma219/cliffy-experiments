@@ -41,6 +41,42 @@ ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_1/minimizers_inc_pl
        height=8)
 
 ########################################################
+# Plot monotonic increases for each digestion type
+########################################################
+
+df <- read.csv("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_1/combined_increases.csv", 
+               header=FALSE,
+               col.names=c("digestion_type", "x", "inc_from_left", "inc_from_right")) 
+
+df <- df %>% mutate(total = inc_from_left + inc_from_right)
+df_filt <- df %>% filter(x<25)
+
+titles <- c("dna_minimizers" = "DNA Minimizers", 
+            "minimizers" = "Minimizers",
+            "full_text" = "Full Text")
+
+# Create the plot
+plot3 <- ggplot(df_filt, aes(x=factor(x), y=total)) +
+   theme_bw() +
+   facet_wrap(~digestion_type, labeller=as_labeller(titles), ncol=1) +
+   geom_bar(stat="identity", fill="steelblue", color="black") +
+   scale_x_discrete(breaks=seq(0,25,2)) +
+   labs(x="Number of Monotonic Increases", y="Number of Profiles") +
+   theme(plot.title=element_text(hjust=0.5, size=12, face="bold"),
+         axis.title.x=element_text(size=12),
+         axis.title.y=element_text(size=12),
+         axis.text=element_text(size=10, color="black"),
+         strip.text=element_text(size=12, face="bold"))
+plot3
+
+ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_1/minimizers_inc_plot.pdf", 
+       plot=plot3, 
+       dpi=800, 
+       device="pdf", 
+       width=5, 
+       height=8)
+
+########################################################
 # Plot CDF functions for monotonic increases
 ########################################################
 
