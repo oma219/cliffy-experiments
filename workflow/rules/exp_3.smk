@@ -224,30 +224,30 @@ rule run_exp3_queries:
 # Section 2.4: Run kraken2 on the all read files
 ###################################################################
 
-rule run_kraken2_query:
+rule run_default_kraken2_query:
     output:
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.kreport2", 
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.kraken2",
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.kraken2.log", 
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.bracken", 
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.bracken.time", 
-        "exp3_kraken_results/{dataset}/{region}/trial_1/output.total.time", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kreport2", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kraken2", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kraken2.log", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.bracken", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.bracken.time",
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.total.time", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.kreport2", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.kraken2",
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.kraken2.log", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.bracken", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.bracken.time", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_1/output.total.time", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kreport2", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kraken2", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kraken2.log", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.bracken", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.bracken.time",
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.total.time", 
     shell:
         """
         # Run trial 1
-        kraken2 --db silva \
+        kraken2 --db {wildcards.database} \
                 --threads 1 \
                 --report {output[0]} \
                 --paired exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq  exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq > {output[1]} 2> {output[2]}
         
         {time_prog} {time_format} --output={output[4]} \
-        bracken -d /vast/blangme2/oahmed/kraken2_dbs/silva \
+        bracken -d /vast/blangme2/oahmed/kraken2_dbs/{wildcards.database} \
 				-r 250 \
 				-l G  \
 				-i {output[0]}\
@@ -259,13 +259,13 @@ rule run_kraken2_query:
         echo "$kraken_time + $bracken_time" > {output[5]}
         
         # Run trial 2
-        kraken2 --db silva \
+        kraken2 --db {wildcards.database}\
                 --threads 1 \
                 --report {output[6]} \
                 --paired exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq  exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq > {output[7]} 2> {output[8]}
         
         {time_prog} {time_format} --output={output[10]} \
-        bracken -d /vast/blangme2/oahmed/kraken2_dbs/silva \
+        bracken -d /vast/blangme2/oahmed/kraken2_dbs/{wildcards.database} \
 				-r 250 \
 				-l G  \
 				-i {output[6]} \
@@ -279,7 +279,9 @@ rule run_kraken2_query:
 
 rule run_all_kraken2_queries_exp3:
     input:
-        expand("exp3_kraken_results/{dataset}/{region}/trial_{trial_num}/output.kreport2",
+        expand("exp3_kraken_results/{database}/{dataset}/{region}/trial_{trial_num}/output.kreport2",
+                database=["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
+                          "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"],
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"],
                 trial_num=[1, 2])
@@ -313,20 +315,20 @@ rule analyze_results_from_docprof_approaches_exp3:
 
 rule analyze_results_from_kraken2_approaches_exp3:
     input:
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kreport2", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kraken2", 
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.bracken", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kreport2", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kraken2", 
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.bracken", 
     output:
-        "exp3_kraken_analysis/{dataset}/{region}/output.classification_results.csv",
-        "exp3_kraken_analysis/{dataset}/{region}/output.abundance_results.csv",
-        "exp3_kraken_analysis/{dataset}/{region}/TP_FP_VP_results.txt",
+        "exp3_kraken_analysis/{database}/{dataset}/{region}/output.classification_results.csv",
+        "exp3_kraken_analysis/{database}/{dataset}/{region}/output.abundance_results.csv",
+        "exp3_kraken_analysis/{database}/{dataset}/{region}/TP_FP_VP_results.txt",
     shell:
         """
         python3 {repo_dir}/src/classify_silva_readset.py \
                         --doc-id-to-traversal {doc_to_trav_exp3} \
                         --silva-tax-ranks {silva_tax_rank_exp3} \
                         --readset-truthset exp3_read_files/{wildcards.dataset}/{wildcards.region}_seqtax.txt \
-                        --output-dir exp3_kraken_analysis/{wildcards.dataset}/{wildcards.region}/ \
+                        --output-dir exp3_kraken_analysis/{wildcards.database}/{wildcards.dataset}/{wildcards.region}/ \
  				        --kraken2-read-class {input[1]} \
  				        --bracken-output {input[2]} \
                         --trav-to-length {trav_to_seq_exp3} \
@@ -343,7 +345,9 @@ rule run_cliffy_analyses_on_all_datasets_exp3:
 
 rule run_kraken_analyses_on_all_datasets_exp3:
     input:
-        expand("exp3_kraken_analysis/{dataset}/{region}/output.classification_results.csv",
+        expand("exp3_kraken_analysis/{database}/{dataset}/{region}/output.classification_results.csv",
+                database=["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
+                          "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"],
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
 
@@ -358,7 +362,7 @@ rule generate_time_results_file_exp3:
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"],
                 mate_num=[1, 2]),
-        expand("exp3_kraken_results/{dataset}/{region}/trial_2/output.total.time",
+        expand("exp3_kraken_results/silva_m31/{dataset}/{region}/trial_2/output.total.time",
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
     output:
@@ -391,7 +395,7 @@ rule generate_time_results_file_exp3:
                         out_fd.write(f"{dataset},{region},cliffy,{digestion_type},{cliffy_time}\n")
                     
                     # extract the corresponding result for kraken
-                    kraken_time = get_time_from_kraken_file(f"exp3_kraken_results/{dataset}/{region}/trial_2/output.total.time")
+                    kraken_time = get_time_from_kraken_file(f"exp3_kraken_results/silva_m31/{dataset}/{region}/trial_2/output.total.time")
                     out_fd.write(f"{dataset},{region},kraken,na,{kraken_time}\n")
 
 ###########################################################
@@ -404,7 +408,9 @@ rule generate_read_classification_results_exp3:
                 digestion=["no_digestion", "dna_minimizers", "minimizers"],
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"]),
-        expand("exp3_kraken_analysis/{dataset}/{region}/output.classification_results.csv",
+        expand("exp3_kraken_analysis/{database}/{dataset}/{region}/output.classification_results.csv",
+                database=["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
+                          "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"],
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
     output:
@@ -435,8 +441,12 @@ rule generate_read_classification_results_exp3:
                         out_fd.writelines(f"{dataset},{region},{digestion_type},{s}\n" for s in cliffy_results)
 
                     # extract the corresponding result for kraken
-                    kraken_results = read_kraken_classification_results(f"exp3_kraken_analysis/{dataset}/{region}/output.classification_results.csv")
-                    out_fd.writelines(f"{dataset},{region},na,{s}\n" for s in kraken_results)
+                    for database_type in ["silva_m31", "silva_m27", "silva_m23", "silva_m15", "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"]:
+                        database_desc = database_type.split("silva_")[1]
+                        kraken_results = read_kraken_classification_results(f"exp3_kraken_analysis/{database_type}/{dataset}/{region}/output.classification_results.csv")
+                        
+                        new_kraken_results = new_strings = [s.replace('kraken2_with_vp', 'kraken2_with_vp_' + database_desc).replace('kraken2_without_vp', 'kraken2_without_vp_' + database_desc) for s in kraken_results]
+                        out_fd.writelines(f"{dataset},{region},na,{s}\n" for s in new_kraken_results)
 
 ###########################################################
 # Section 2.7: Process classifications in order to compare
@@ -445,33 +455,33 @@ rule generate_read_classification_results_exp3:
 
 rule process_per_read_classifications_exp3:
     input:
-        cliffy="exp3_cliffy_analysis/no_digestion/{dataset}/{region}/TP_results.csv",
-        kraken="exp3_kraken_analysis/{dataset}/{region}/TP_FP_VP_results.txt"
+        "exp3_cliffy_analysis/no_digestion/{dataset}/{region}/TP_results.csv",
+        "exp3_kraken_analysis/{database}/{dataset}/{region}/TP_FP_VP_results.txt"
     output:
-        "exp3_compare_acc/{dataset}/{region}/FP_Kraken.txt",
-        "exp3_compare_acc/{dataset}/{region}/TP_Kraken.txt",
-        "exp3_compare_acc/{dataset}/{region}/FP_in_kraken_TP_in_cliffy.txt",
-        "exp3_compare_acc/{dataset}/{region}/TP_in_kraken_TP_in_cliffy.txt"
+        "exp3_compare_acc/{database}/{dataset}/{region}/FP_Kraken.txt",
+        "exp3_compare_acc/{database}/{dataset}/{region}/TP_Kraken.txt",
+        "exp3_compare_acc/{database}/{dataset}/{region}/FP_in_kraken_TP_in_cliffy.txt",
+        "exp3_compare_acc/{database}/{dataset}/{region}/TP_in_kraken_TP_in_cliffy.txt"
     shell:
         """
-        awk -F, '{{ if ($2 == "FP") {{print $1}} }}' {input.kraken} > {output[0]}
-        awk -F, '{{ if ($2 == "TP") {{print $1}} }}' {input.kraken} > {output[1]}
+        awk -F, '{{ if ($2 == "FP") {{print $1}} }}' {input[1]} > {output[0]}
+        awk -F, '{{ if ($2 == "TP") {{print $1}} }}' {input[1]} > {output[1]}
 
-        awk -F, '{{ print $1 }}' {input.cliffy} {output[0]} | sort | uniq -d > {output[2]}
-        awk -F, '{{ print $1 }}' {input.cliffy} {output[1]} | sort | uniq -d > {output[3]}
+        awk -F, '{{ print $1 }}' {input[0]} {output[0]} | sort | uniq -d > {output[2]}
+        awk -F, '{{ print $1 }}' {input[0]} {output[1]} | sort | uniq -d > {output[3]}
         """
 
 rule analyze_cliffy_and_kraken_classifications_comparisons_exp3:
     input:
-        "exp3_compare_acc/{dataset}/{region}/FP_in_kraken_TP_in_cliffy.txt",
-        "exp3_compare_acc/{dataset}/{region}/TP_in_kraken_TP_in_cliffy.txt",
+        "exp3_compare_acc/{database}/{dataset}/{region}/FP_in_kraken_TP_in_cliffy.txt",
+        "exp3_compare_acc/{database}/{dataset}/{region}/TP_in_kraken_TP_in_cliffy.txt",
         "exp3_cliffy_results/no_digestion/{dataset}/{region}/trial_2/mate_1.listings",
         "exp3_cliffy_results/no_digestion/{dataset}/{region}/trial_2/mate_2.listings",
-        "exp3_kraken_results/{dataset}/{region}/trial_2/output.kraken2"
+        "exp3_kraken_results/{database}/{dataset}/{region}/trial_2/output.kraken2"
     output:
-        "exp3_compare_acc/{dataset}/{region}/FP.csv",
-        "exp3_compare_acc/{dataset}/{region}/TP.csv",
-        "exp3_compare_acc/{dataset}/{region}/FP_TP.csv"
+        "exp3_compare_acc/{database}/{dataset}/{region}/FP.csv",
+        "exp3_compare_acc/{database}/{dataset}/{region}/TP.csv",
+        "exp3_compare_acc/{database}/{dataset}/{region}/FP_TP.csv"
     shell:
         """
         python3 {repo_dir}/src/analyze_classifications.py \
@@ -482,7 +492,7 @@ rule analyze_cliffy_and_kraken_classifications_comparisons_exp3:
                 --truthset  exp3_read_files/{wildcards.dataset}/{wildcards.region}_seqtax.txt\
                 --doc-to-trav {doc_to_trav_exp3} \
                 --silva-taxonomy {silva_tax_rank_exp3} \
-                --output-dir exp3_compare_acc/{wildcards.dataset}/{wildcards.region}/  \
+                --output-dir exp3_compare_acc/{wildcards.database}/{wildcards.dataset}/{wildcards.region}/  \
                 --output-file-prefix FP \
                 --trav-to-seqlength {trav_to_seq_exp3}
 
@@ -494,7 +504,7 @@ rule analyze_cliffy_and_kraken_classifications_comparisons_exp3:
                 --truthset  exp3_read_files/{wildcards.dataset}/{wildcards.region}_seqtax.txt \
                 --doc-to-trav {doc_to_trav_exp3} \
                 --silva-taxonomy {silva_tax_rank_exp3} \
-                --output-dir exp3_compare_acc/{wildcards.dataset}/{wildcards.region}/ \
+                --output-dir exp3_compare_acc/{wildcards.database}/{wildcards.dataset}/{wildcards.region}/ \
                 --output-file-prefix TP \
                 --trav-to-seqlength {trav_to_seq_exp3}
         
@@ -507,7 +517,9 @@ rule analyze_cliffy_and_kraken_classifications_comparisons_exp3:
 
 rule generate_read_classification_comparison_results_exp3:
     input:
-        expand("exp3_compare_acc/{dataset}/{region}/FP_TP.csv", 
+        expand("exp3_compare_acc/{database}/{dataset}/{region}/FP_TP.csv", 
+                database=["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
+                          "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"],
                 dataset=["aquatic", "soil"],
                 region=["V1_V2", "V4_V4"]),
     output:
@@ -515,26 +527,26 @@ rule generate_read_classification_comparison_results_exp3:
     run:
         with open(output[0], "w") as out_fd:
             out_fd.write("dataset,region,type,x,no_hits,hits_to_correct_genus,lengths_contain_doc,lengths_exclusive_doc,percent_to_clade,avg_clade_size\n")
-            for dataset in ["aquatic", "soil"]:
-                for region in ["V1_V2", "V4_V4"]:
-                    with open(f"exp3_compare_acc/{dataset}/{region}/FP_TP.csv", "r") as in_fd:
-                        lines = [x.strip() for x in in_fd.readlines()]
-                        for line in lines:
-                            out_fd.write(f"{dataset},{region},{line}\n")
+            for database in ["silva_m31", "silva_m27", "silva_m23", "silva_m15", 
+                             "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"]:
+                for dataset in ["aquatic", "soil"]:
+                    for region in ["V1_V2", "V4_V4"]:
+                        with open(f"exp3_compare_acc/{database}/{dataset}/{region}/FP_TP.csv", "r") as in_fd:
+                            lines = [x.strip() for x in in_fd.readlines()]
+                            for line in lines:
+                                out_fd.write(f"{database},{dataset},{region},{line}\n")
 
 
 ###########################################################
 # Section 2.9: Combine the abundance results into one file
 ###########################################################
-"exp3_cliffy_analysis/{digestion}/{dataset}/{region}/output.abundance_results.csv",
-"exp3_kraken_analysis/{dataset}/{region}/output.abundance_results.csv",
 
 rule generate_final_abundance_file_exp3:
     input:
         expand("exp3_cliffy_analysis/minimizers/{dataset}/{region}/output.abundance_results.csv", 
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"]),
-        expand("exp3_kraken_analysis/{dataset}/{region}/output.abundance_results.csv",
+        expand("exp3_kraken_analysis/silva_m31/{dataset}/{region}/output.abundance_results.csv",
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
     output:
@@ -558,7 +570,7 @@ rule generate_final_abundance_file_exp3:
                         bc_data_fd.write(f"{dataset},{region},cliffy,{lines[-1].split()[-1]}\n")
                     
                     # copy results from kraken file
-                    kraken_file = f"exp3_kraken_analysis/{dataset}/{region}/output.abundance_results.csv"
+                    kraken_file = f"exp3_kraken_analysis/silva_m31/{dataset}/{region}/output.abundance_results.csv"
                     with open(kraken_file, "r") as in_fd:
                         lines = [x.strip() for x in in_fd.readlines()]
                         assert "Bray-Curtis" in lines[-1]

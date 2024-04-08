@@ -174,7 +174,7 @@ def analyze_combined_results(full_read_set, silva_id_to_taxa, taxa_to_seqlength)
     list_num_no_hits = []; list_num_hits_to_correct_genus = [];
     list_lengths_containing_doc = []; list_lengths_exclusive_to_doc = []
 
-    list_clade_level_hits = [0, 0, 0, 0, 0, 0] # genus, family, order, class, phylum, kingdom
+    list_clade_level_hits = [0, 0, 0, 0, 0, 0, 0, 0] # genus, family, order, class, phylum, kingdom, root, no_hits
     list_clade_hit_seqlengths = [{"length_sum": 0, "num_seqs": 0} for _ in range(6)]
 
     # methods to analyze each method's results
@@ -220,6 +220,7 @@ def analyze_combined_results(full_read_set, silva_id_to_taxa, taxa_to_seqlength)
         kraken_analysis = process_kraken_result(read_obj["kraken_results"])
         num_no_hits = kraken_analysis.get(0, 0)
         num_hits_to_correct_genus = kraken_analysis.get(read_obj["silva_correct_id"], 0)
+        num_root_hits = kraken_analysis.get(1, 0)
 
         ranks_hits = [silva_id_to_taxa[taxa_id][1] for taxa_id, count in kraken_analysis.items() if taxa_id not in [0, 1] for _ in range(count)]
         list_clade_level_hits[0] += ranks_hits.count("genus")
@@ -228,6 +229,8 @@ def analyze_combined_results(full_read_set, silva_id_to_taxa, taxa_to_seqlength)
         list_clade_level_hits[3] += ranks_hits.count("class")
         list_clade_level_hits[4] += ranks_hits.count("phylum")
         list_clade_level_hits[5] += ranks_hits.count("domain") 
+        list_clade_level_hits[6] += num_root_hits
+        list_clade_level_hits[7] += num_no_hits
 
         for taxa_id, _ in kraken_analysis.items():
             if taxa_id not in [0, 1]:

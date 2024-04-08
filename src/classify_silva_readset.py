@@ -773,8 +773,12 @@ class KrakenRead:
             return ["FN", None]
 
         node_id = int(kraken2_output[2])
+        if node_id == 1: # root level
+            return ["FP", None]
+            
         traversal = silva_tax_obj.get_traversal_from_id(node_id)
-        assert traversal is not None
+        assert traversal is not None, f"Traversal not found for node_id = {node_id}"
+
 
         trav_obj = TaxonomyTraversal(traversal, silva_tax_obj)
         kraken2_name = trav_obj.get_certain_level(level)
@@ -1224,11 +1228,11 @@ class KrakenReadSet:
                 assert len(results) == (results.count("TP") + results.count("FP") + results.count("VP") + results.count("FN"))
                 
                 num_tp = results.count("TP"); num_fp = results.count("FP"); num_vp = results.count("VP"); num_fn = results.count("FN")
-                rate_with_vp = round(num_tp/(num_tp + num_fp + num_vp + num_fn), 4)
-                rate_without_vp = round(num_tp/(num_tp + num_fp), 4)
+                rate_with_vp = round((num_tp+num_vp)/(num_tp + num_fp + num_vp + num_fn), 4)
+                rate_without_vp = round(num_tp/(num_tp + num_fp + num_vp + num_fn), 4)
 
                 KrakenReadSet.log(f"confusion matrix: TP={results.count('TP')}, FP={results.count('FP')}, VP={results.count('VP')}, FN={results.count('FN')}")
-                KrakenReadSet.log(f"writing this to file: kraken2_with_vp,method0,{clade},{rate_with_vp}\n")
+                KrakenReadSet.log(f"writing this to file: kraken2_with_vp,method0,{clade},{rate_with_vp}")
                 KrakenReadSet.log(f"writing this to file: kraken2_without_vp,method0,{clade},{rate_without_vp}\n")
                 
                 out_fd.write(f"kraken2_with_vp,method0,{clade},{rate_with_vp}\n")
