@@ -2,6 +2,7 @@
 library(ggplot2)
 library(tidyr)
 library(dplyr)
+library(RColorBrewer)
 
 ########################################################
 # Plot showing the time comparison
@@ -46,7 +47,13 @@ acc_df <- read.csv("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3/accur
 # Define the plotting function
 plot_acc_func <- function(curr_dataset) {
         # subset the dataframe to relavant dataset
-        df_subset <- acc_df[acc_df$dataset == curr_dataset, ]
+        df_temp <- acc_df[acc_df$dataset == curr_dataset, ]
+        
+        # subset to only relevant kraken approaches
+        method_names <- c("cliffy", "kraken2_with_vp_m31", "kraken2_without_vp_m31", "kraken2_with_vp_m27", "kraken2_without_vp_m27", "kraken2_with_vp_m23", "kraken2_without_vp_m23")
+        df_subset <- df_temp %>% filter((method %in% method_names))
+        df_subset$method <- factor(df_subset$method, levels = c("cliffy", "kraken2_with_vp_m31", "kraken2_with_vp_m27", "kraken2_with_vp_m23", "kraken2_without_vp_m31", "kraken2_without_vp_m27", "kraken2_without_vp_m23"))
+        method_new_names <- c("Cliffy (TP/n)", "Kraken2, k=31 (TP+VP/n)", "Kraken2, k=27 (TP+VP/n)", "Kraken2, k=23 (TP+VP/n)", "Kraken2, k=31 (TP/n)", "Kraken2, k=27 (TP/n)", "Kraken2, k=23 (TP/n)")
         
         # set the order of the clades since that will be x-axis
         levels_order <- c("genus", "family", "order", "class", "phylum", "domain")
@@ -73,8 +80,8 @@ plot_acc_func <- function(curr_dataset) {
                 scale_y_continuous(breaks=seq(0.70, 1.0, 0.05)) +
                 labs(x="Major Clade", y="Metric") +
                 facet_wrap(~region, labeller=as_labeller(titles)) +
-                scale_color_discrete(name="Method (Metric)", labels=c("Cliffy (TP/TP+FP)", "Kraken2 (TP/TP+FP+VP+FN)", "Kraken2 (TP/TP+FP)")) +
-                scale_fill_discrete(name="Method (Metric)", labels=c("Cliffy (TP/TP+FP)", "Kraken2 (TP/TP+FP+VP+FN)", "Kraken2 (TP/TP+FP)")) +
+                scale_color_discrete(name="Method (Metric)", labels=method_new_names) +
+                scale_fill_discrete(name="Method (Metric)", labels=method_new_names) +
                 scale_linetype_discrete(name="Query Approach",
                                       labels=c("LCA", "Approximate Doc. Listing")) +
                 scale_shape_manual(name="Digestion Approach",
@@ -150,16 +157,23 @@ plot_abund_func <- function(curr_dataset) {
         # set the order of the methods since that will be x-axis
         levels_order <- c("truth", "docprofiles", "kraken2")
         df_subset$method <- factor(df_subset$method, levels=levels_order, labels=c("Truth", "Cliffy", "Kraken2"))
-        
+        df_subset$genus <- factor(df_subset$genus, levels = c(setdiff(unique(df_subset$genus), "Others"), "Others"))
+
         # title of facets
         titles <- c("V1_V2" = "V1-V2 Reads (n=200k)",
                     "V3_V4" = "V3-V4 Reads (n=200k)",
                     "V4_V4" = "V4 Reads (n=200k)",
                     "V4_V5" = "V4-V5 Reads (n=200k)")
         
+        # define color mapping
+        color_mapping <- colorRampPalette(brewer.pal(8, "Set1"))(length(unique(df_subset$genus)))
+        names(color_mapping) <- sort(unique(df_subset$genus))
+        color_mapping["Others"] <- "gray"
+        
         # make the plot
         plot <- ggplot(df_subset, aes(x=method, y=abundance, fill=genus)) +
                 geom_bar(stat="identity", colour="black", size=0.1) +
+                scale_fill_manual(values = color_mapping) +
                 theme_bw() +
                 facet_wrap(~region, labeller=as_labeller(titles)) +
                 theme(axis.text.x=element_text(angle=0,size=12,color="black"),
@@ -210,10 +224,13 @@ plot <- ggplot(bc_df, aes(x=region, y=bcdist, group=method)) +
         labs(x="Region", y="Bray-Curtis Dissimilarity") +
         scale_color_discrete(name="Method", labels=c("Cliffy", "Kraken2")) +
         scale_x_discrete(labels=c("V1-V2", "V3-V4", "V4", "V4-V5")) +
-        scale_y_continuous(breaks=seq(0,1,0.02))
+        scale_y_continuous(breaks=seq(0,1,0.02), limits=c(0,0.20))
 plot
 ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_3/bc_distances.pdf", 
        plot, 
+       width=10, 
+       height=4,
+       dpi=500)
        width=10, 
        height=4,
        dpi=500)

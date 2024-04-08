@@ -20,7 +20,7 @@ titles <- c("dna_minimizers" = "DNA Minimizers",
 
 plot1 <- ggplot(df_filt, aes(x=factor(x), y=value, fill=variable)) +
          theme_bw() +
-         facet_wrap(~digestion_type, labeller=as_labeller(titles)) +
+         facet_wrap(~digestion_type, labeller=as_labeller(titles), ncol=1) +
          geom_bar(stat="identity", position=position_dodge(), color="black") +
          scale_x_discrete(breaks=seq(0,25,2)) +
          #scale_y_continuous(breaks=seq(0,5000000,500000), labels = scales::scientific) +
@@ -37,8 +37,8 @@ ggsave("/Users/omarahmed/Downloads/work_dir/cliffy_paper/exp_1/minimizers_inc_pl
        plot=plot1, 
        dpi=800, 
        device="pdf", 
-       width=10, 
-       height=4)
+       width=6, 
+       height=8)
 
 ########################################################
 # Plot CDF functions for monotonic increases
