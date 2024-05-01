@@ -43,38 +43,38 @@ rule run_cliffy_full_text_query:
     shell:
         """
         # Run mate 1 and mate 2 in the first trial
+        {time_prog} {time_format} --output={output[1]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_full_text/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/no_digestion/{wildcards.dataset}/{wildcards.region}/trial_1/mate_1 \
 				      --taxcomp \
                       --ftab \
 				      --num-col 7 2> {output[2]}
-        grep 'querying the patterns' {output[2]} | awk '{{ print substr($7, 2) }}' > {output[1]}
 
+        {time_prog} {time_format} --output={output[4]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_full_text/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/no_digestion/{wildcards.dataset}/{wildcards.region}/trial_1/mate_2 \
 				      --taxcomp \
                       --ftab \
 				      --num-col 7 2> {output[5]}
-        grep 'querying the patterns' {output[5]} | awk '{{ print substr($7, 2) }}' > {output[4]}
 
         # Run mate 1 and mate 2 in the second trial
+        {time_prog} {time_format} --output={output[7]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_full_text/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/no_digestion/{wildcards.dataset}/{wildcards.region}/trial_2/mate_1 \
 				      --taxcomp \
                       --ftab \
 				      --num-col 7 2> {output[8]}
-        grep 'querying the patterns' {output[8]} | awk '{{ print substr($7, 2) }}' > {output[7]}
 
+        {time_prog} {time_format} --output={output[10]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_full_text/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/no_digestion/{wildcards.dataset}/{wildcards.region}/trial_2/mate_2 \
 				      --taxcomp \
                       --ftab \
 				      --num-col 7 2> {output[11]}
-        grep 'querying the patterns' {output[11]} | awk '{{ print substr($7, 2) }}' > {output[10]}
         """
 
 ########################################################################
@@ -98,6 +98,7 @@ rule run_cliffy_dna_minimizers_query:
     shell:
         """
         # Run mate 1 and mate 2 in the first trial
+        {time_prog} {time_format} --output={output[1]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_dna_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/dna_minimizers/{wildcards.dataset}/{wildcards.region}/trial_1/mate_1 \
@@ -107,8 +108,8 @@ rule run_cliffy_dna_minimizers_query:
                       --small-window 4 \
                       --large-window 11 \
 				      --num-col 7 2> {output[2]}
-        grep 'querying the patterns' {output[2]} | awk '{{ print substr($7, 2) }}' > {output[1]}
 
+        {time_prog} {time_format} --output={output[4]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_dna_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/dna_minimizers/{wildcards.dataset}/{wildcards.region}/trial_1/mate_2 \
@@ -118,9 +119,9 @@ rule run_cliffy_dna_minimizers_query:
                       --small-window 4 \
                       --large-window 11 \
 				      --num-col 7 2> {output[5]}
-        grep 'querying the patterns' {output[5]} | awk '{{ print substr($7, 2) }}' > {output[4]}
 
         # Run mate 1 and mate 2 in the second trial
+        {time_prog} {time_format} --output={output[7]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_dna_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/dna_minimizers/{wildcards.dataset}/{wildcards.region}/trial_2/mate_1 \
@@ -130,8 +131,8 @@ rule run_cliffy_dna_minimizers_query:
                       --small-window 4 \
                       --large-window 11 \
 				      --num-col 7 2> {output[8]}
-        grep 'querying the patterns' {output[8]} | awk '{{ print substr($7, 2) }}' > {output[7]}
 
+        {time_prog} {time_format} --output={output[10]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_dna_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/dna_minimizers/{wildcards.dataset}/{wildcards.region}/trial_2/mate_2 \
@@ -141,7 +142,6 @@ rule run_cliffy_dna_minimizers_query:
                       --small-window 4 \
                       --large-window 11 \
 				      --num-col 7 2> {output[11]}
-        grep 'querying the patterns' {output[11]} | awk '{{ print substr($7, 2) }}' > {output[10]}
         """
 
 ###################################################################
@@ -165,6 +165,7 @@ rule run_cliffy_minimizers_query:
     shell:
         """
         # Run mate 1 and mate 2 in the first trial
+        {time_prog} {time_format} --output={output[1]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/minimizers/{wildcards.dataset}/{wildcards.region}/trial_1/mate_1 \
@@ -173,9 +174,9 @@ rule run_cliffy_minimizers_query:
                       --minimizers \
                       --small-window 4 \
                       --large-window 11 \
-				      --num-col 7 2> {output[2]}
-        grep 'querying the patterns' {output[2]} | awk '{{ print substr($7, 2) }}' > {output[1]}
+				      --num-col 5 2> {output[2]}
 
+        {time_prog} {time_format} --output={output[4]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/minimizers/{wildcards.dataset}/{wildcards.region}/trial_1/mate_2 \
@@ -184,10 +185,10 @@ rule run_cliffy_minimizers_query:
                       --minimizers \
                       --small-window 4 \
                       --large-window 11 \
-				      --num-col 7 2> {output[5]}
-        grep 'querying the patterns' {output[5]} | awk '{{ print substr($7, 2) }}' > {output[4]}
+				      --num-col 5 2> {output[5]}
 
         # Run mate 1 and mate 2 in the second trial
+        {time_prog} {time_format} --output={output[7]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_1.fq \
                       --output exp3_cliffy_results/minimizers/{wildcards.dataset}/{wildcards.region}/trial_2/mate_1 \
@@ -196,9 +197,9 @@ rule run_cliffy_minimizers_query:
                       --minimizers \
                       --small-window 4 \
                       --large-window 11 \
-				      --num-col 7 2> {output[8]}
-        grep 'querying the patterns' {output[8]} | awk '{{ print substr($7, 2) }}' > {output[7]}
+				      --num-col 5 2> {output[8]}
 
+        {time_prog} {time_format} --output={output[10]} \
         pfp_doc64 run --ref exp3_cliffy_indexes/tax_compressed_minimizers/output \
 				      --pattern exp3_read_files/{wildcards.dataset}/{wildcards.region}_mate_2.fq \
                       --output exp3_cliffy_results/minimizers/{wildcards.dataset}/{wildcards.region}/trial_2/mate_2 \
@@ -207,11 +208,36 @@ rule run_cliffy_minimizers_query:
                       --minimizers \
                       --small-window 4 \
                       --large-window 11 \
-				      --num-col 7 2> {output[11]}
-        grep 'querying the patterns' {output[11]} | awk '{{ print substr($7, 2) }}' > {output[10]}
+				      --num-col 5 2> {output[11]}
         """
 
-rule run_exp3_queries:
+# Rules to run batches of jobs at same time:
+
+rule run_exp3_cliffy_queries_human_gut:
+    input:
+        expand("exp3_cliffy_results/{index_type}/human_gut/{region}/trial_{trial_num}/mate_{mate}.listings", 
+                index_type=["no_digestion", "dna_minimizers", "minimizers"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"],
+                trial_num=[1, 2],
+                mate=[1, 2])
+
+rule run_exp3_cliffy_queries_aquatic:
+    input:
+        expand("exp3_cliffy_results/{index_type}/aquatic/{region}/trial_{trial_num}/mate_{mate}.listings", 
+                index_type=["no_digestion", "dna_minimizers", "minimizers"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"],
+                trial_num=[1, 2],
+                mate=[1, 2])
+
+rule run_exp3_cliffy_queries_soil:
+    input:
+        expand("exp3_cliffy_results/{index_type}/soil/{region}/trial_{trial_num}/mate_{mate}.listings", 
+                index_type=["no_digestion", "dna_minimizers", "minimizers"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"],
+                trial_num=[1, 2],
+                mate=[1, 2])
+
+rule run_exp3_all_cliffy_queries:
     input:
         expand("exp3_cliffy_results/{index_type}/{dataset}/{region}/trial_{trial_num}/mate_{mate}.listings", 
                 index_type=["no_digestion", "dna_minimizers", "minimizers"],
@@ -336,6 +362,27 @@ rule analyze_results_from_kraken2_approaches_exp3:
                         --classify-kraken
         """
 
+rule run_cliffy_analyses_on_human_dataset_exp3:
+    input:
+        expand("exp3_cliffy_analysis/{digestion}/{dataset}/{region}/output.classification_results.csv", 
+                digestion=["no_digestion", "dna_minimizers", "minimizers"],
+                dataset=["human_gut"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
+                
+rule run_cliffy_analyses_on_aquatic_dataset_exp3:
+    input:
+        expand("exp3_cliffy_analysis/{digestion}/{dataset}/{region}/output.classification_results.csv", 
+                digestion=["no_digestion", "dna_minimizers", "minimizers"],
+                dataset=["aquatic"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
+
+rule run_cliffy_analyses_on_soil_dataset_exp3:
+    input:
+        expand("exp3_cliffy_analysis/{digestion}/{dataset}/{region}/output.classification_results.csv", 
+                digestion=["no_digestion", "dna_minimizers", "minimizers"],
+                dataset=["soil"],
+                region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
+
 rule run_cliffy_analyses_on_all_datasets_exp3:
     input:
         expand("exp3_cliffy_analysis/{digestion}/{dataset}/{region}/output.classification_results.csv", 
@@ -350,7 +397,6 @@ rule run_kraken_analyses_on_all_datasets_exp3:
                           "silva_m31_nospaces", "silva_m27_nospaces", "silva_m23_nospaces", "silva_m15_nospaces"],
                 dataset=["human_gut", "aquatic", "soil"],
                 region=["V1_V2", "V3_V4", "V4_V4", "V4_V5"])
-
 
 ###########################################################
 # Section 2.6: Gather the time results for each method
@@ -372,7 +418,7 @@ rule generate_time_results_file_exp3:
             with open(path, "r") as in_fd:
                 lines = [x.strip() for x in in_fd.readlines()]
                 assert len(lines) == 1, f"Error: {path} has more than one line = {lines}"
-                return float(lines[0])
+                return float(lines[0].split()[5])
 
         def get_time_from_kraken_file(path):
             with open(path, "r") as in_fd:
@@ -449,7 +495,7 @@ rule generate_read_classification_results_exp3:
                         out_fd.writelines(f"{dataset},{region},na,{s}\n" for s in new_kraken_results)
 
 ###########################################################
-# Section 2.7: Process classifications in order to compare
+# Section 2.8: Process classifications in order to compare
 #              classifications
 ###########################################################
 
@@ -512,7 +558,7 @@ rule analyze_cliffy_and_kraken_classifications_comparisons_exp3:
         """
 
 ###########################################################
-# Section 2.8: Combine the results from Section 2.7
+# Section 2.9: Combine the results from Section 2.7
 ###########################################################
 
 rule generate_read_classification_comparison_results_exp3:
@@ -538,7 +584,7 @@ rule generate_read_classification_comparison_results_exp3:
 
 
 ###########################################################
-# Section 2.9: Combine the abundance results into one file
+# Section 2.10: Combine the abundance results into one file
 ###########################################################
 
 rule generate_final_abundance_file_exp3:

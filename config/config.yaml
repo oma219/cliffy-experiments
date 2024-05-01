@@ -1,11 +1,12 @@
-WORK_DIR: "/vast/blangme2/oahmed/cliffy_exps/exp_2"
+WORK_DIR: "/vast/blangme2/oahmed/cliffy_exps/exp_1_trial2"
 REPO_DIR: "/home/oahmed6/cliffy-experiments"
 TIME_PROG: "/usr/bin/time"
 TIME_FORMAT: "--format='user= %U system= %S elapsed= %e CPU= %P MemMax= %M'"
 DAP_READ_PROG: "/home/oahmed6/parallel_read/main"
 MICROBE_MIXER_PROG: "/home/oahmed6/Sim_16S_Reads/src/sim_16s_reads.py"
-NUM_GENERA_EXP1: 20
+NUM_GENERA_EXP1: 10000
 TEMP_MEM_USED_EXP1: "10GB"
-DOC_TO_TRAV_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3/exp3_silva_data/doc_to_traversal.txt"
-SILVA_TAX_RANK_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3/exp3_silva_data/tax_slv_ssu_138.1.txt"
-TRAV_TO_SEQ_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3/exp3_silva_data/traversal_to_seq_length.txt"
+NUM_READS_EXP2: 10000000
+DOC_TO_TRAV_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3_trial2/exp3_silva_data/doc_to_traversal.txt"
+SILVA_TAX_RANK_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3_trial2/exp3_silva_data/tax_slv_ssu_138.1.txt"
+TRAV_TO_SEQ_EXP3: "/vast/blangme2/oahmed/cliffy_exps/exp_3_trial2/exp3_silva_data/traversal_to_seq_length.txt"

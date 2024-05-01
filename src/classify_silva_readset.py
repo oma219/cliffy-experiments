@@ -282,15 +282,16 @@ class DocProfRead:
 
         Returns True if Correct, and False Otherwise
         """
+
         # make sure that we only have one correct class
         correct_name = self.correct_taxa.get_certain_level(level)
         classes_with_correct_name = [(x == correct_name) for x in clades_labels_at_certain_level]
 
         # special cases where there are multiple correct answers or none
         if sum(classes_with_correct_name) == 0:
-            raise ValueError(f"No classes with correct name found for {level} = {correct_name}")
+            return [True, correct_name, correct_name, self.name] # read does not have taxa at this level
         elif sum(classes_with_correct_name) > 1:
-            return [True, correct_name, correct_name, self.name]
+            return [True, correct_name, correct_name, self.name] # ambiguous at this level
 
         # create a dictionary of names to weights
         name_to_weight = copy.deepcopy(name_to_weight_input)
@@ -316,19 +317,14 @@ class DocProfRead:
                 # iterate through all documents between left and rightmost and add weight
                 weight_to_distribute = (length)/(right_doc+1-left_doc)
                 for doc_id in range(left_doc, right_doc+1):
-                    if doc_id in doc_id_to_clade:
-                        taxa_hit = doc_id_to_clade[doc_id]
-                        if taxa_hit in weight_dict:
-                            weight_dict[taxa_hit][0] += weight_to_distribute #length
-                            weight_dict[taxa_hit][1] += 1
+                    taxa_hit = doc_id_to_clade.get(doc_id)
 
-                # for doc_id in doc_listing_new:
-                #     if doc_id in doc_id_to_traversal:
-                #         taxa_hit = doc_id_to_traversal[doc_id].get_certain_level(level)
-                #         if taxa_hit in weight_dict:
-                #             weight_dict[taxa_hit][0] += length 
-                #             weight_dict[taxa_hit][1] += 1   
+                    if taxa_hit and taxa_hit in weight_dict:
+                        weight_dict[taxa_hit][0] += weight_to_distribute #length
+                        weight_dict[taxa_hit][1] += 1
+
             return weight_dict
+
         
         # add each mate1 results to list
         name_to_weight = add_mate_listings_to_weight_vector(self.mate1_listings, name_to_weight)
@@ -462,7 +458,7 @@ class DocProfRead:
 
         # special cases where there are multiple correct answers or none
         if sum(classes_with_correct_name) == 0:
-            raise ValueError(f"No classes with correct name found for {level} = {correct_name}")
+            return [True, correct_name, correct_name, self.name]
         elif sum(classes_with_correct_name) > 1:
             return [True, correct_name, correct_name, self.name]
 
@@ -789,7 +785,7 @@ class KrakenRead:
         if sum(classes_with_correct_name) > 1:
             return ["TP", correct_name]
         elif sum(classes_with_correct_name) == 0:
-            raise ValueError(f"No classes with correct name found for {level} = {correct_name}")
+            return ["TP", correct_name]
 
         if kraken2_name == correct_name:
             return ["TP", correct_name]
@@ -855,17 +851,6 @@ class DocProfReadSet:
         self.load_reads(self.paths["mate1_listings"],
                         self.paths["mate2_listings"])
         DocProfReadSet.log(f"finished loading {len(self.read_list)} read pairs")
-
-        # Example of how to classify a single read:
-        # test_list = [1, 400, 465, 466, 2400, 2850, 3060, 6000, 6275, 6960, 7205, 7485, 7600, 8000, 8400, 8821, 9136, 10020, 10746, 12040, 12830, 13970, 14596, 20440, 24550, 25636, 27200, 28723, 29647, 32746, 33965, 34047, 34800, 39600, 40720, 43636, 45405, 46510, 46900, 48427, 49025, 51709, 52390, 53578, 55340, 57558, 59351, 61675, 64400, 68416, 69712]
-        # test_list = [20440, 24550, 29647]
-        # for read_num in test_list:
-        #     print(self.read_list[read_num].classify_method3("genus", 
-        #                                         self.silva_nodes_at_each_level["genus"],
-        #                                         self.doc_id_to_full_traversal,
-        #                                         self.trav_to_length))
-        #     print("------------------------------------------------------------\n\n")
-        # exit(1)
         
     def initialize_paths_variable(self,
                                   mate1_listings,
@@ -964,7 +949,7 @@ class DocProfReadSet:
 
                 # extract the taxa names at level we are classifying at
                 clades_labels_at_certain_level = [x.get_certain_level(clade) for x in self.silva_nodes_at_each_level[clade]]
-                
+
                 # create a dictionary of taxa to weights
                 name_to_weight = {}
                 for x in self.silva_nodes_at_each_level[clade]:
@@ -987,7 +972,7 @@ class DocProfReadSet:
                                    method_num) for i, curr_read in enumerate(self.read_list)]
 
                 # convert to a list of batches
-                batches = list(batch(curr_read_list, 100))
+                batches = list(batch(curr_read_list, 1000))
 
                 # Classify all the reads at this level
                 DocProfReadSet.log(f"starting to classify {len(curr_read_list)} reads at the {clade} level.")
@@ -1011,7 +996,6 @@ class DocProfReadSet:
 
                 DocProfReadSet.log(f"output to file: cliffy,method{method_num},{clade},{sensitivity}\n")
                 out_fd.write(f"cliffy,method{method_num},{clade},{sensitivity}\n")
-        
             
     def generate_abundance_plot(self,
                                 output_dir,
@@ -1067,7 +1051,7 @@ class DocProfReadSet:
                             2) for i, curr_read in enumerate(self.read_list)]
 
         # convert to a list of batches
-        batches = list(batch(curr_read_list, 100))
+        batches = list(batch(curr_read_list, 1000))
 
         # classify all the reads at genus level
         with mp.Pool() as pool:
@@ -1307,25 +1291,17 @@ class KrakenReadSet:
 def docprof_classify_read_worker(input_list):
     """ function that is called in parallel to classify all the reads """
     results = []
-
     for input_tuple in input_list:
         i, curr_read_obj, clade, clades_labels_at_certain_level, doc_id_to_clade, name_to_weight, trav_to_length, method_num = input_tuple
         if method_num == 0:
             result_tup = curr_read_obj.classify_method0(clade, clades_labels_at_certain_level, doc_id_to_clade, name_to_weight, trav_to_length)
-        # elif method_num == 1:
-        #     result_tup = curr_read_obj.classify_method1(clade, clades_labels_at_certain_level, doc_id_to_clade, trav_to_length)
         elif method_num == 2:
             result_tup = curr_read_obj.classify_method2(clade, clades_labels_at_certain_level, doc_id_to_clade, name_to_weight, trav_to_length)
-        # elif method_num == 3:
-        #     result_tup = curr_read_obj.classify_method3(clade, clades_labels_at_certain_level, doc_id_to_clade, trav_to_length)
-        # elif method_num == 4:
-        #     result_tup = curr_read_obj.classify_method4(clade, clades_labels_at_certain_level, doc_id_to_clade, trav_to_length)
         else:
             print("Error: unexpected method number for classification."); exit(1)
         
         assert len(result_tup) == 4, f"Error: unexpected length of result tuple: {result_tup}"
         results.append((i, result_tup[0], result_tup[1], result_tup[2], result_tup[3]))
-    #return (i, result_tup[0], result_tup[1], result_tup[2])
     return results
 
 def debug_classification(name, mate1_listings, mate2_listings, name_to_weight, correct_name):

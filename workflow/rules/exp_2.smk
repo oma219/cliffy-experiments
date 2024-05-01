@@ -83,8 +83,8 @@ rule generate_reads_for_biome_exp2:
         get_input_primers_exp2,
         "exp2_abundance_files/{biome}/abundance.csv"
     output:
-        "exp2_reads/{biome}/{primer}/final_reads_mate_1.fq",
-        "exp2_reads/{biome}/{primer}/final_reads_mate_2.fq",
+        "exp2_reads/{biome}/{primer}/{primer}_mate_1.fq",
+        "exp2_reads/{biome}/{primer}/{primer}_mate_2.fq",
         "exp2_reads/{biome}/{primer}/stdout.log"
     shell:
         """
@@ -94,11 +94,18 @@ rule generate_reads_for_biome_exp2:
                 --primers {input[2]} \
                 --silva-taxonomy {input[1]} \
                 --silva-ref {input[0]} \
+                --num-reads {num_reads_to_simulate_exp2} \
+                --output-name {wildcards.primer} \
                 --temp-dir exp2_reads/{wildcards.biome}/{wildcards.primer}/ > {output[2]}
+        
+        # remove extra files
+        rm exp2_reads/{wildcards.biome}/{wildcards.primer}/genus_*_reads_1.fq 
+        rm exp2_reads/{wildcards.biome}/{wildcards.primer}/genus_*reads_2.fq 
+        rm exp2_reads/{wildcards.biome}/{wildcards.primer}/genus_*_seqs.fna
         """
 
 # Section 2.3: Overall rule to run experiment 2
 
 rule run_exp2:
     input:
-        expand("exp2_reads/{biome}/{primer}/final_reads_mate_1.fq", primer=["V1_V2", "V3_V4", "V4_V4", "V4_V5"], biome=["waste_water", "human_gut", "aquatic", "soil"])
+        expand("exp2_reads/{biome}/{primer}/{primer}_mate_1.fq", primer=["V1_V2", "V3_V4", "V4_V4", "V4_V5"], biome=["waste_water", "human_gut", "aquatic", "soil"])

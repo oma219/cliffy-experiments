@@ -18,6 +18,8 @@ microbe_mixer_prog = config["MICROBE_MIXER_PROG"]
 num_genera_exp1 = config["NUM_GENERA_EXP1"]
 tmp_mem_used_exp1 = config["TEMP_MEM_USED_EXP1"]
 
+num_reads_to_simulate_exp2 = config["NUM_READS_EXP2"]
+
 doc_to_trav_exp3 = config["DOC_TO_TRAV_EXP3"]
 silva_tax_rank_exp3 = config["SILVA_TAX_RANK_EXP3"]
 trav_to_seq_exp3 = config["TRAV_TO_SEQ_EXP3"]

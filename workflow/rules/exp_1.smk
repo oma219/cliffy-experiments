@@ -185,9 +185,9 @@ rule build_index_with_two_pass_taxonomic_compressed_with_dna_minimizers_exp1:
                         --tmp-size {tmp_mem_used_exp1} 2> {output[1]}
         """
 
-##########################################################
-# Section 2.2: Build the indexes for Cliffy on full text
-##########################################################
+###################################################################
+# Section 2.2: Build the indexes for Cliffy on minimizer digested
+###################################################################
 
 rule build_index_with_two_pass_full_dap_with_minimizers_exp1:
     input:
@@ -232,7 +232,7 @@ rule build_index_with_two_pass_taxonomic_compressed_with_minimizers_exp1:
                         --output exp1_index/tax_compressed_minimizers/output \
                         --revcomp \
                         --taxcomp \
-                        --num-col 7 \
+                        --num-col 5 \
                         --minimizers  \
                         --small-window 4 \
                         --large-window 11 \
@@ -356,6 +356,53 @@ rule combine_all_monotonic_increases_exp1:
                     lines = [x.strip() for x in in_fd.readlines()]
                     for line in lines:
                         out_fd.write(f"{digestion_type},{line}\n")
+
+
+#######################################################
+# Section 2.6: Combine index sizees into csv file
+#######################################################
+
+rule combine_all_index_sizes_into_csv_file_exp1:
+    input:
+        expand("exp1_index/{index_type}_{digestion}/output.fna.sdap",
+                           index_type=["full_dap"],
+                           digestion=["full_text", "minimizers", "dna_minimizers"]),
+        expand("exp1_index/{index_type}_{digestion}/output.fna.taxcomp.sdap",
+                           index_type=["tax_compressed"],
+                           digestion=["full_text", "minimizers", "dna_minimizers"])
+        
+    output:
+        "exp1_final_results/results.csv"
+    run:
+        file_extensions_full = [".bwt.cliffy", ".F.cliffy", ".sdap", ".edap", ".runcnt"]
+        file_extensions_tax = [".bwt.cliffy", ".F.cliffy", ".taxcomp.sdap", ".taxcomp.edap", 
+                               ".taxcomp.of.sdap", ".taxcomp.of.edap", ".taxcomp.ofptr.sdap", ".taxcomp.ofptr.edap",
+                               ".runcnt", ".ftab"]
+        
+        with open(output[0], "w") as out_fd:
+            for index_type in ["full_dap", "tax_compressed"]:
+                for digestion in ["full_text", "minimizers", "dna_minimizers"]:
+                    curr_prefix = f"exp1_index/{index_type}_{digestion}/output.fna"
+                    if index_type == "full_dap":
+                        file_extensions = file_extensions_full
+                    else:
+                        file_extensions = file_extensions_tax
+                    
+                    # iterate through files and sum up size
+                    total_size = 0
+                    for file_extension in file_extensions:
+                        curr_file = f"{curr_prefix}{file_extension}"
+                        if os.path.exists(curr_file):
+                            total_size += os.path.getsize(curr_file)
+                        else:
+                            raise FileNotFoundError(f"File {curr_file} does not exist")
+                    
+                    # write to output file
+                    out_fd.write(f"{index_type},{digestion},{total_size},{round(total_size/1073741824, 4)}\n")
+
+        
+
+
 
 ##############################################
 # Section 2.6: Overall rule of experiment 1
